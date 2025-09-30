@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="es">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>LUMIX ARTIFICIAL • Catálogo</title>
+  <title>LUMIX ARTIFICIAL • Cardápio</title>
   <style>
     :root {
       --grad-1: #8338ec; /* Morado */
@@ -20,30 +20,19 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; line-height: 1.5; }
-    
-    /* --- CAMBIO REALIZADO AQUÍ --- */
     .hero {
-      height: 60vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 0 20px;
-      animation: fadeIn 1s ease-out;
-
-      /* Propiedades para la imagen de fondo */
+      height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+      padding: 0 20px; animation: fadeIn 1s ease-out;
       background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('background.png');
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
+      background-size: cover; background-position: center center; background-repeat: no-repeat;
     }
-    /* --- FIN DEL CAMBIO --- */
-
     .hero img.logo { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--neon-verde); box-shadow: 0 0 20px var(--neon-verde), inset 0 0 10px var(--neon-verde); animation: pulse 2s infinite ease-in-out; }
     .hero h1 { font-size: 2.5em; font-weight: 800; margin: 20px 0 10px; text-shadow: 0 0 10px var(--bg); }
     .hero p { font-size: 1.1em; max-width: 500px; opacity: 0.9; text-shadow: 0 0 5px var(--bg); }
     .catalog-wrapper { padding: 20px; }
+    .category-filters { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+    .category-filters button { background: var(--card); color: var(--text); border: 1px solid #333; padding: 10px 20px; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
+    .category-filters button.active { background: var(--neon-fucsia); color: white; border-color: var(--neon-fucsia); font-weight: bold; }
     .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
     .card { background-color: var(--card); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid #333; }
     .card-img { height: 160px; width: 100%; object-fit: cover; }
@@ -67,16 +56,35 @@
   <div class="hero">
     <img src="logo.png" alt="Logo de LUMIX ARTIFICIAL" class="logo">
     <h1>LUMIX ARTIFICIAL</h1>
-    <p>Tu pedido a la velocidad de la luz. Explora nuestro menú interactivo y ordena ahora.</p>
+    <p>Seu pedido na velocidade da luz. Explore nosso cardápio interativo e peça agora.</p>
   </div>
 
   <div class="catalog-wrapper">
+    <div class="category-filters" id="categoryFilters">
+      <button class="active" data-category="todos">Todos</button>
+      <button data-category="Pratos">Pratos</button>
+      <button data-category="Porções">Porções</button>
+      <button data-category="Sobremesas">Sobremesas</button>
+      <button data-category="Bebidas">Bebidas</button>
+    </div>
+
     <div class="catalog-grid" id="catalog"></div>
   </div>
 
   <div class="cart-float" id="openCart" style="display: none;"><span id="cartCount">0</span></div>
-  <div class="modal" id="cartModal"><div class="modal-content"><h2>Tu Pedido</h2><div id="cartItems"></div><hr><h3>Total: <span id="cartTotal">0.00</span></h3><button id="orderWhats">Pedir por WhatsApp</button><button class="ghost" id="closeCart">Seguir comprando</button></div></div>
-  <div id="fsHint">💡 Para una mejor experiencia, agrega este catálogo a tu pantalla de inicio.</div>
+
+  <div class="modal" id="cartModal">
+    <div class="modal-content">
+      <h2>Seu Pedido</h2>
+      <div id="cartItems"></div>
+      <hr>
+      <h3>Total: <span id="cartTotal">R$ 0,00</span></h3>
+      <button id="orderWhats">Pedir pelo WhatsApp</button>
+      <button class="ghost" id="closeCart">Continuar Comprando</button>
+    </div>
+  </div>
+
+  <div id="fsHint">💡 Para uma melhor experiência, adicione este cardápio à sua tela inicial.</div>
   
   <script>
     const catalog = document.getElementById('catalog');
@@ -89,26 +97,48 @@
     const closeCart = document.getElementById('closeCart');
     const orderWhats = document.getElementById('orderWhats');
     const fsHint = document.getElementById('fsHint');
+    const categoryFilters = document.getElementById('categoryFilters');
 
-    const money = val => val.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
+    const money = val => val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     let cart = {};
 
+    // --- NOVA LISTA DE PRODUTOS EM PORTUGUÊS ---
     const products = [
-      {id: 1, name: 'Hamburguesa Cyber-Queso', price: 32.50, desc: 'Carne de 180g, queso cheddar flambeado, bacon pixelado y salsa de IA.', tag: 'Plato Fuerte', img: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
-      {id: 2, name: 'Papas Fritas Neón', price: 18.90, desc: 'Papas crujientes con un aderezo especial de la casa que brilla en la oscuridad.', tag: 'Entrada', img: 'https://images.pexels.com/photos/1893555/pexels-photo-1893555.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
-      {id: 3, name: 'Pizza Quántica', price: 55.00, desc: 'Una explosión de sabores con pepperoni, mozzarella de búfala y borde relleno.', tag: 'Plato Fuerte', img: 'https://images.pexels.com/photos/825661/pexels-photo-825661.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
-      {id: 4, name: 'Ensalada Aurora', price: 25.00, desc: 'Mix de hojas verdes, pollo grillado, crutones y un aderezo aurora boreal.', tag: 'Entrada', img: 'https://images.pexels.com/photos/2097090/pexels-photo-2097090.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
-      {id: 5, name: 'Tacos de Agujero Negro', price: 28.50, desc: 'Tres tacos de birria con tortilla de maíz azul y una salsa que te atrapará.', tag: 'Plato Fuerte', img: 'https://images.pexels.com/photos/7954955/pexels-photo-7954955.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
-      {id: 6, name: 'Postre Galáctico', price: 22.00, desc: 'Brownie de chocolate con helado de vainilla y una lluvia de estrellas comestibles.', tag: 'Postre', img: 'https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
-      {id: 7, name: 'Bebida Fucsia Fusión', price: 12.00, desc: 'Refrescante limonada con frutos rojos y un toque de magia.', tag: 'Bebida', img: 'https://images.pexels.com/photos/1304540/pexels-photo-1304540.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
-      {id: 8, name: 'Café de Plasma', price: 9.50, desc: 'Espresso doble para recargar tu energía al máximo.', tag: 'Bebida', img: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
-      {id: 9, name: 'Alitas BBQ Atómicas', price: 35.00, desc: '10 alitas bañadas en nuestra salsa BBQ secreta con un toque picante.', tag: 'Entrada', img: 'https://images.pexels.com/photos/2629572/pexels-photo-2629572.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
-      {id: 10, name: 'Milanesa del Futuro', price: 40.00, desc: 'Milanesa de ternera gigante con papas fritas y huevo frito.', tag: 'Plato Fuerte', img: 'https://images.pexels.com/photos/5639450/pexels-photo-5639450.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'}
+      // Pratos
+      {id: 1, name: 'Picanha na Chapa', price: 89.90, desc: 'Picanha fatiada com mandioca cozida na manteiga de garrafa e vinagrete.', category: 'Pratos', img: 'https://images.pexels.com/photos/853005/pexels-photo-853005.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 2, name: 'Feijoada Completa', price: 59.90, desc: 'Acompanha arroz, couve, farofa, torresmo e laranja. Servida às quartas e sábados.', category: 'Pratos', img: 'https://images.pexels.com/photos/9940428/pexels-photo-9940428.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 3, name: 'Moqueca de Peixe', price: 79.90, desc: 'Deliciosa moqueca com peixe branco, pimentões, tomate, leite de coco e azeite de dendê.', category: 'Pratos', img: 'https://images.pexels.com/photos/8993888/pexels-photo-8993888.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 4, name: 'Strogonoff de Frango', price: 45.50, desc: 'Cremoso strogonoff com cogumelos, acompanha arroz branco e batata palha.', category: 'Pratos', img: 'https://images.pexels.com/photos/13523293/pexels-photo-13523293.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 5, name: 'Parmegiana de Mignon', price: 65.00, desc: 'Bife de filé mignon à parmegiana com muito queijo, acompanha arroz e fritas.', category: 'Pratos', img: 'https://images.pexels.com/photos/10398075/pexels-photo-10398075.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      
+      // Porções
+      {id: 6, name: 'Fritas com Cheddar e Bacon', price: 35.90, desc: 'Porção generosa de batatas fritas crocantes com cheddar cremoso e bacon em cubos.', category: 'Porções', img: 'https://images.pexels.com/photos/115740/pexels-photo-115740.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 7, name: 'Anéis de Cebola', price: 29.90, desc: 'Anéis de cebola empanados e crocantes, acompanha molho barbecue da casa.', category: 'Porções', img: 'https://images.pexels.com/photos/4106411/pexels-photo-4106411.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 8, name: 'Mandioca Frita Cremosa', price: 28.50, desc: 'Mandioca cozida e depois frita, super cremosa por dentro. Acompanha queijo coalho.', category: 'Porções', img: 'https://images.pexels.com/photos/12948911/pexels-photo-12948911.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 9, name: 'Iscas de Frango', price: 38.00, desc: 'Tirinhas de frango empanadas e fritas, perfeitas para petiscar. Acompanha molho de mostarda e mel.', category: 'Porções', img: 'https://images.pexels.com/photos/60616/appetizer-bread-platter-breakfast-60616.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 10, name: 'Pastéis de Carne Seca', price: 32.00, desc: 'Porção com 8 mini pastéis recheados com carne seca desfiada e catupiry.', category: 'Porções', img: 'https://images.pexels.com/photos/8145265/pexels-photo-8145265.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      
+      // Sobremesas
+      {id: 11, name: 'Pudim de Leite', price: 15.00, desc: 'Clássico pudim de leite condensado com calda de caramelo, cremoso e irresistível.', category: 'Sobremesas', img: 'https://images.pexels.com/photos/4694293/pexels-photo-4694293.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 12, name: 'Mousse de Maracujá', price: 18.00, desc: 'Mousse aerado com o azedinho e doce na medida certa, com calda de maracujá fresco.', category: 'Sobremesas', img: 'https://images.pexels.com/photos/5741151/pexels-photo-5741151.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 13, name: 'Açaí na Tigela (500ml)', price: 25.00, desc: 'Açaí batido com banana, acompanha granola, leite em pó e leite condensado.', category: 'Sobremesas', img: 'https://images.pexels.com/photos/5946639/pexels-photo-5946639.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 14, name: 'Petit Gateau', price: 22.90, desc: 'Bolinho quente de chocolate com interior cremoso, servido com sorvete de creme e calda.', category: 'Sobremesas', img: 'https://images.pexels.com/photos/6938018/pexels-photo-6938018.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 15, name: 'Torta Holandesa', price: 19.90, desc: 'Fatia de torta com base de biscoito, creme holandês e cobertura de chocolate.', category: 'Sobremesas', img: 'https://images.pexels.com/photos/101533/pexels-photo-101533.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+
+      // Bebidas
+      {id: 16, name: 'Caipirinha de Limão', price: 18.00, desc: 'A tradicional caipirinha brasileira, feita com cachaça de qualidade, limão e açúcar.', category: 'Bebidas', img: 'https://images.pexels.com/photos/4397732/pexels-photo-4397732.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 17, name: 'Guaraná Antarctica (Lata)', price: 7.00, desc: 'O refrigerante com o sabor original do Brasil.', category: 'Bebidas', img: 'https://images.pexels.com/photos/1301373/pexels-photo-1301373.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 18, name: 'Caldo de Cana (500ml)', price: 9.00, desc: 'Garapa gelada, moída na hora. Peça com limão ou abacaxi.', category: 'Bebidas', img: 'https://images.pexels.com/photos/1429424/pexels-photo-1429424.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 19, name: 'Suco de Laranja Natural (500ml)', price: 10.00, desc: 'Feito com laranjas frescas espremidas na hora.', category: 'Bebidas', img: 'https://images.pexels.com/photos/161586/juice-fruit-superfood-drink-161586.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 20, name: 'Cerveja Long Neck', price: 12.00, desc: 'Escolha entre Heineken, Budweiser ou Stella Artois.', category: 'Bebidas', img: 'https://images.pexels.com/photos/1267697/pexels-photo-1267697.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'}
     ];
     
-    function renderCatalog() {
+    // --- FUNÇÃO DE RENDERIZAÇÃO MODIFICADA ---
+    function renderCatalog(filter = 'todos') {
       catalog.innerHTML = '';
-      products.forEach(p => {
+      const filteredProducts = products.filter(p => filter === 'todos' || p.category === filter);
+
+      filteredProducts.forEach(p => {
         const el = document.createElement('div');
         el.className = 'card';
         el.innerHTML = `
@@ -119,11 +149,12 @@
           </div>
           <div class="card-footer">
             <span class="price">${money(p.price)}</span>
-            <button data-add="${p.id}">Agregar</button>
+            <button data-add="${p.id}">Adicionar</button>
           </div>
         `;
         catalog.appendChild(el);
       });
+
       document.querySelectorAll('[data-add]').forEach(btn => btn.addEventListener('click', e => {
         const id = +e.currentTarget.dataset.add;
         addToCart(id);
@@ -157,21 +188,35 @@
         const p = products.find(x => x.id == id);
         const row = document.createElement('div');
         row.className = 'cart-row';
-        row.innerHTML = `<div>${p.name} x ${qty}</div><div>${money(p.price * qty)} <button class='ghost' data-rem='${id}'>-</button></div>`;
+        row.innerHTML = `<div>${p.name} x ${qty}</div><div>${money(p.price * qty)} <button class='ghost' data-rem='${p.id}'>-</button></div>`;
         cartItems.appendChild(row);
       });
       document.querySelectorAll('[data-rem]').forEach(b => b.addEventListener('click', e => {
         removeFromCart(+e.currentTarget.dataset.rem);
       }));
     }
+    
+    // --- LÓGICA DOS BOTÕES DE FILTRO ---
+    categoryFilters.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') {
+        const selectedCategory = e.target.dataset.category;
+        
+        // Remove a classe 'active' de todos os botões
+        categoryFilters.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+        // Adiciona a classe 'active' ao botão clicado
+        e.target.classList.add('active');
+
+        renderCatalog(selectedCategory);
+      }
+    });
 
     openCart.addEventListener('click', () => { cartModal.style.display = 'block' });
     closeCart.addEventListener('click', () => { cartModal.style.display = 'none' });
 
     orderWhats.addEventListener('click', () => {
-      // ¡IMPORTANTE! Reemplaza este número con tu número de WhatsApp real, incluyendo el código de país.
-      const phone = '+51987654321'; 
-      let lines = ['*¡Hola LUMIX ARTIFICIAL! 🤖 Quiero hacer un pedido:*\n'];
+      // IMPORTANTE! Troque este número pelo seu número de WhatsApp real, incluindo o código do país (+55).
+      const phone = '+5511999998888'; 
+      let lines = ['*Olá LUMIX ARTIFICIAL! 🤖 Gostaria de fazer um pedido:*\n'];
       Object.entries(cart).forEach(([id, qty]) => {
         const p = products.find(x => x.id == id);
         lines.push(`- ${qty} x ${p.name}`);
@@ -193,3 +238,4 @@
   </script>
 </body>
 </html>
+
