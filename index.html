@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>LUMIX ARTIFICIAL • Catálogo</title>
+  <style>
+    :root {
+      --grad-1: #8338ec; /* Morado */
+      --grad-2: #ff006e; /* Fucsia */
+      --grad-3: #adff02; /* Verde Limón */
+      --bg: #0c0a09; /* Fondo oscuro para resaltar el neón */
+      --card: #1c1917;
+      --text: #f2f2f2;
+      --neon-fucsia: #ff006e;
+      --neon-verde: #adff02;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; line-height: 1.5; }
+    .hero {
+      height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+      padding: 0 20px; background: linear-gradient(135deg, var(--grad-1), var(--grad-2));
+      animation: fadeIn 1s ease-out;
+    }
+    .hero img.logo { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--neon-verde); box-shadow: 0 0 20px var(--neon-verde), inset 0 0 10px var(--neon-verde); animation: pulse 2s infinite ease-in-out; }
+    .hero h1 { font-size: 2.5em; font-weight: 800; margin: 20px 0 10px; text-shadow: 0 0 10px var(--bg); }
+    .hero p { font-size: 1.1em; max-width: 500px; opacity: 0.9; text-shadow: 0 0 5px var(--bg); }
+    .catalog-wrapper { padding: 20px; }
+    .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .card { background-color: var(--card); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid #333; }
+    .card-img { height: 160px; width: 100%; object-fit: cover; }
+    .card-body { padding: 15px; flex-grow: 1; }
+    .card-title { font-size: 1.2em; font-weight: 600; margin: 0 0 5px; }
+    .card-desc { font-size: 0.9em; opacity: 0.7; margin: 0 0 15px; }
+    .card-footer { padding: 0 15px 15px; display: flex; justify-content: space-between; align-items: center; }
+    .price { font-size: 1.3em; font-weight: 700; color: var(--neon-verde); }
+    button { background: var(--neon-fucsia); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
+    button:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--neon-fucsia); }
+    .cart-float { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, var(--grad-1), var(--grad-2)); color: white; border-radius: 50%; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; font-size: 1.5em; font-weight: 700; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.4); z-index: 1000; }
+    .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
+    .modal-content { background: var(--bg); margin: 30% auto; padding: 20px; border: 1px solid var(--neon-fucsia); border-radius: 12px; max-width: 90%; width: 500px; box-shadow: 0 0 30px var(--neon-fucsia); }
+    .cart-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; }
+    .ghost { background: transparent; border: 1px solid var(--neon-fucsia); color: var(--neon-fucsia); }
+    #fsHint { position: fixed; bottom: 10px; left: 10px; right: 10px; background: #333; color: white; text-align: center; padding: 12px; border-radius: 8px; z-index: 2000; display: none; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <img src="logo.png" alt="Logo de LUMIX ARTIFICIAL" class="logo">
+    
+    <h1>LUMIX ARTIFICIAL</h1>
+    <p>Tu pedido a la velocidad de la luz. Explora nuestro menú interactivo y ordena ahora.</p>
+  </div>
+
+  <div class="catalog-wrapper">
+    <div class="catalog-grid" id="catalog"></div>
+  </div>
+
+  <div class="cart-float" id="openCart" style="display: none;"><span id="cartCount">0</span></div>
+  <div class="modal" id="cartModal"><div class="modal-content"><h2>Tu Pedido</h2><div id="cartItems"></div><hr><h3>Total: <span id="cartTotal">0.00</span></h3><button id="orderWhats">Pedir por WhatsApp</button><button class="ghost" id="closeCart">Seguir comprando</button></div></div>
+  <div id="fsHint">💡 Para una mejor experiencia, agrega este catálogo a tu pantalla de inicio.</div>
+  
+  <script>
+    const catalog = document.getElementById('catalog');
+    const cartFloat = document.getElementById('openCart');
+    const cartCount = document.getElementById('cartCount');
+    const cartModal = document.getElementById('cartModal');
+    const cartItems = document.getElementById('cartItems');
+    const cartTotal = document.getElementById('cartTotal');
+    const openCart = document.getElementById('openCart');
+    const closeCart = document.getElementById('closeCart');
+    const orderWhats = document.getElementById('orderWhats');
+    const fsHint = document.getElementById('fsHint');
+
+    const money = val => val.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
+    let cart = {};
+
+    const products = [
+      {id: 1, name: 'Hamburguesa Cyber-Queso', price: 32.50, desc: 'Carne de 180g, queso cheddar flambeado, bacon pixelado y salsa de IA.', tag: 'Plato Fuerte', img: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 2, name: 'Papas Fritas Neón', price: 18.90, desc: 'Papas crujientes con un aderezo especial de la casa que brilla en la oscuridad.', tag: 'Entrada', img: 'https://images.pexels.com/photos/1893555/pexels-photo-1893555.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 3, name: 'Pizza Quántica', price: 55.00, desc: 'Una explosión de sabores con pepperoni, mozzarella de búfala y borde relleno.', tag: 'Plato Fuerte', img: 'https://images.pexels.com/photos/825661/pexels-photo-825661.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 4, name: 'Ensalada Aurora', price: 25.00, desc: 'Mix de hojas verdes, pollo grillado, crutones y un aderezo aurora boreal.', tag: 'Entrada', img: 'https://images.pexels.com/photos/2097090/pexels-photo-2097090.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 5, name: 'Tacos de Agujero Negro', price: 28.50, desc: 'Tres tacos de birria con tortilla de maíz azul y una salsa que te atrapará.', tag: 'Plato Fuerte', img: 'https://images.pexels.com/photos/7954955/pexels-photo-7954955.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 6, name: 'Postre Galáctico', price: 22.00, desc: 'Brownie de chocolate con helado de vainilla y una lluvia de estrellas comestibles.', tag: 'Postre', img: 'https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 7, name: 'Bebida Fucsia Fusión', price: 12.00, desc: 'Refrescante limonada con frutos rojos y un toque de magia.', tag: 'Bebida', img: 'https://images.pexels.com/photos/1304540/pexels-photo-1304540.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 8, name: 'Café de Plasma', price: 9.50, desc: 'Espresso doble para recargar tu energía al máximo.', tag: 'Bebida', img: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 9, name: 'Alitas BBQ Atómicas', price: 35.00, desc: '10 alitas bañadas en nuestra salsa BBQ secreta con un toque picante.', tag: 'Entrada', img: 'https://images.pexels.com/photos/2629572/pexels-photo-2629572.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'},
+      {id: 10, name: 'Milanesa del Futuro', price: 40.00, desc: 'Milanesa de ternera gigante con papas fritas y huevo frito.', tag: 'Plato Fuerte', img: 'https://images.pexels.com/photos/5639450/pexels-photo-5639450.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'}
+    ];
+    
+    function renderCatalog() {
+      catalog.innerHTML = '';
+      products.forEach(p => {
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `
+          <img src="${p.img}" alt="${p.name}" class="card-img">
+          <div class="card-body">
+            <h3 class="card-title">${p.name}</h3>
+            <p class="card-desc">${p.desc}</p>
+          </div>
+          <div class="card-footer">
+            <span class="price">${money(p.price)}</span>
+            <button data-add="${p.id}">Agregar</button>
+          </div>
+        `;
+        catalog.appendChild(el);
+      });
+      document.querySelectorAll('[data-add]').forEach(btn => btn.addEventListener('click', e => {
+        const id = +e.currentTarget.dataset.add;
+        addToCart(id);
+      }));
+    }
+
+    function addToCart(id) {
+      cart[id] = (cart[id] || 0) + 1;
+      updateCartUI();
+    }
+
+    function removeFromCart(id) {
+      if (!cart[id]) return;
+      cart[id]--;
+      if (cart[id] <= 0) delete cart[id];
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const totalCount = Object.values(cart).reduce((s, v) => s + v, 0);
+      const totalValue = Object.entries(cart).reduce((s, [id, qty]) => s + (products.find(p => p.id == id).price * qty), 0);
+      if (totalCount > 0) {
+        cartFloat.style.display = 'flex';
+      } else {
+        cartFloat.style.display = 'none';
+      }
+      cartCount.textContent = totalCount;
+      cartTotal.textContent = money(totalValue);
+      cartItems.innerHTML = '';
+      Object.entries(cart).forEach(([id, qty]) => {
+        const p = products.find(x => x.id == id);
+        const row = document.createElement('div');
+        row.className = 'cart-row';
+        row.innerHTML = `<div>${p.name} x ${qty}</div><div>${money(p.price * qty)} <button class='ghost' data-rem='${id}'>-</button></div>`;
+        cartItems.appendChild(row);
+      });
+      document.querySelectorAll('[data-rem]').forEach(b => b.addEventListener('click', e => {
+        removeFromCart(+e.currentTarget.dataset.rem);
+      }));
+    }
+
+    openCart.addEventListener('click', () => { cartModal.style.display = 'block' });
+    closeCart.addEventListener('click', () => { cartModal.style.display = 'none' });
+
+    orderWhats.addEventListener('click', () => {
+      // ¡IMPORTANTE! Reemplaza este número con tu número de WhatsApp real, incluyendo el código de país.
+      const phone = '+51987654321'; 
+      let lines = ['*¡Hola LUMIX ARTIFICIAL! 🤖 Quiero hacer un pedido:*\n'];
+      Object.entries(cart).forEach(([id, qty]) => {
+        const p = products.find(x => x.id == id);
+        lines.push(`- ${qty} x ${p.name}`);
+      });
+      const total = Object.entries(cart).reduce((s, [id, qty]) => s + (products.find(p => p.id == id).price * qty), 0);
+      lines.push('\n*Total estimado: ' + money(total) + '*');
+      const text = encodeURIComponent(lines.join('\n'));
+      const base = 'https://wa.me/' + phone.replace(/\+/g, '');
+      window.open(base + '?text=' + text, '_blank');
+    });
+
+    renderCatalog();
+    updateCartUI();
+    
+    setTimeout(() => {
+      fsHint.style.display = 'block';
+      setTimeout(() => { fsHint.style.display = 'none' }, 6000);
+    }, 2000);
+  </script>
+</body>
+</html>
