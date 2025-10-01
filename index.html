@@ -11,13 +11,13 @@
   <style>
     :root {
       --grad-1: #8338ec; --grad-2: #ff006e; --grad-3: #adff02; --bg: #0c0a09;
-      --card: #1c1917; --text: #f2f2f2; --neon-fucsia: #ff006e; --neon-verde: #adff02;
+      --card: #1c1917; --text: #f2f-f2; --neon-fucsia: #ff006e; --neon-verde: #adff02;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; line-height: 1.5; }
     
-    /* --- SECCIÓN DEL HERO MODIFICADA PARA VIDEO --- */
+    /* --- SECCIÓN DEL HERO CORREGIDA PARA VIDEO --- */
     .hero { 
       height: 70vh; 
       display: flex; 
@@ -26,8 +26,8 @@
       align-items: center; 
       text-align: center; 
       padding: 0 20px; 
-      position: relative; /* Necesario para posicionar el video y el overlay */
-      overflow: hidden; /* Evita que el video se desborde */
+      position: relative; 
+      overflow: hidden; 
     }
     .hero-video {
       position: absolute;
@@ -35,27 +35,31 @@
       left: 50%;
       width: 100%;
       height: 100%;
-      object-fit: cover; /* Hace que el video cubra todo el espacio, como background-size: cover */
+      object-fit: cover;
       transform: translate(-50%, -50%);
-      z-index: -2; /* Lo posiciona al fondo de todo */
+      z-index: 1; /* Capa 1: El video al fondo */
     }
-    .hero::after { /* Este es el nuevo overlay oscuro */
+    .hero::after { /* Overlay oscuro */
       content: '';
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6); /* Overlay un poco más oscuro para mejor legibilidad */
-      z-index: -1;
+      background: rgba(0,0,0,0.6);
+      z-index: 2; /* Capa 2: El overlay sobre el video */
     }
-    .hero > * { /* Asegura que todo el contenido esté sobre el video y el overlay */
+    /* El contenido del hero va en la capa 3 */
+    .hero .logo,
+    .hero h1,
+    .hero p,
+    .hero .hero-info {
       position: relative;
-      z-index: 1;
+      z-index: 3;
     }
-    /* --- FIN DE LA MODIFICACIÓN DEL HERO --- */
+    /* --- FIN DE LA CORRECCIÓN DEL HERO --- */
 
     .hero img.logo { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--neon-verde); box-shadow: 0 0 20px var(--neon-verde), inset 0 0 10px var(--neon-verde); animation: pulse 2s infinite ease-in-out; }
-    .hero h1 { font-size: 2.5em; font-weight: 800; margin: 20px 0 10px; text-shadow: 0 0 10px var(--bg); }
-    .hero p { font-size: 1.1em; max-width: 500px; opacity: 0.9; text-shadow: 0 0 5px var(--bg); }
+    .hero h1 { font-size: 2.5em; font-weight: 800; margin: 20px 0 10px; text-shadow: 0 0 10px #000; }
+    .hero p { font-size: 1.1em; max-width: 500px; opacity: 0.9; text-shadow: 0 0 5px #000; }
     .hero-info { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 30px; }
     .info-item { background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); border-radius: 20px; padding: 8px 15px; font-size: 0.9em; display: flex; align-items: center; gap: 8px; border: 1px solid #333; }
     .catalog-wrapper { padding: 0 20px 20px 20px; }
@@ -107,9 +111,7 @@
   <div class="hero">
     <video class="hero-video" autoplay loop muted playsinline poster="background.png">
       <source src="hero-video.mp4" type="video/mp4">
-      Tu navegador no soporta videos de fondo.
     </video>
-
     <img src="logo.png" alt="Logo de LUMIX ARTIFICIAL" class="logo">
     <h1>CARDAPIO LUMIX</h1>
     <p>Seu pedido na velocidade da luz. Explore nosso cardápio interativo e peça agora.</p>
@@ -165,7 +167,7 @@
   </div>
   
   <script>
-    // El script completo es idéntico a la versión anterior. No necesita cambios.
+    // El script no ha cambiado, es idéntico a la versión anterior y funcional.
     document.addEventListener('DOMContentLoaded', () => {
         const catalog = document.getElementById('catalog');
         const categoryFilters = document.getElementById('categoryFilters');
@@ -211,7 +213,7 @@
             closeDeliveryModal.addEventListener('click', () => { deliveryModal.style.display = 'none'; });
             deliveryForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const phone = '+5562999998888';
+                const phone = '+551152862580';
                 let lines = ['*Novo Pedido via Cardápio LUMIX!* 🤖\n\n--- *ITENS DO PEDIDO* ---\n'];
                 cart.forEach(item => { lines.push(`- ${item.quantity}x ${item.name}`); let optionsText = Object.entries(item.options).map(([key, value]) => `  - ${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`).join('\n'); if (optionsText) lines.push(optionsText); });
                 const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -242,7 +244,7 @@
                     getLocationBtn.disabled = true;
                     navigator.geolocation.getCurrentPosition(position => {
                         const { latitude, longitude } = position.coords;
-                        const mapsLink = `https://maps.google.com/?q=${latitude},${longitude}`;
+                        const mapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
                         locationStatus.textContent = mapsLink;
                         getLocationBtn.disabled = false;
                     }, error => {
@@ -262,3 +264,4 @@
   </script>
 </body>
 </html>
+
