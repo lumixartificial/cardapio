@@ -185,7 +185,7 @@
 
             deliveryForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const phone = '+5562999998888';
+                const phone = '+551152862580';
                 let lines = ['*Novo Pedido via Cardápio LUMIX!* 🤖\n\n--- *ITENS DO PEDIDO* ---\n'];
                 cart.forEach(item => { lines.push(`- ${item.quantity}x ${item.name}`); let optionsText = Object.entries(item.options).map(([key, value]) => `  - ${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`).join('\n'); if (optionsText) lines.push(optionsText); });
                 const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -242,6 +242,7 @@
   </script>
 </body>
 </html>
+
 
 
 
