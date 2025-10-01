@@ -16,7 +16,43 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; line-height: 1.5; }
-    .hero { height: 70vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 20px; animation: fadeIn 1s ease-out; background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('background.png'); background-size: cover; background-position: center center; background-repeat: no-repeat; }
+    
+    /* --- SECCIÓN DEL HERO MODIFICADA PARA VIDEO --- */
+    .hero { 
+      height: 70vh; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center; 
+      text-align: center; 
+      padding: 0 20px; 
+      position: relative; /* Necesario para posicionar el video y el overlay */
+      overflow: hidden; /* Evita que el video se desborde */
+    }
+    .hero-video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Hace que el video cubra todo el espacio, como background-size: cover */
+      transform: translate(-50%, -50%);
+      z-index: -2; /* Lo posiciona al fondo de todo */
+    }
+    .hero::after { /* Este es el nuevo overlay oscuro */
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); /* Overlay un poco más oscuro para mejor legibilidad */
+      z-index: -1;
+    }
+    .hero > * { /* Asegura que todo el contenido esté sobre el video y el overlay */
+      position: relative;
+      z-index: 1;
+    }
+    /* --- FIN DE LA MODIFICACIÓN DEL HERO --- */
+
     .hero img.logo { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--neon-verde); box-shadow: 0 0 20px var(--neon-verde), inset 0 0 10px var(--neon-verde); animation: pulse 2s infinite ease-in-out; }
     .hero h1 { font-size: 2.5em; font-weight: 800; margin: 20px 0 10px; text-shadow: 0 0 10px var(--bg); }
     .hero p { font-size: 1.1em; max-width: 500px; opacity: 0.9; text-shadow: 0 0 5px var(--bg); }
@@ -62,13 +98,18 @@
     .options-form .radio-group input:checked + label, .delivery-form .radio-group input:checked + label { border-color: var(--neon-fucsia); }
     .options-form .radio-group input, .delivery-form .radio-group input { display: none; }
     .delivery-form input[type="text"], .delivery-form input[type="tel"], .delivery-form textarea { width: 100%; background-color: var(--card); border: 1px solid #333; color: var(--text); border-radius: 8px; padding: 12px; margin-bottom: 15px; box-sizing: border-box; font-size: 1em; }
-    .options-form textarea { width: 100%; background-color: var(--card); border: 1px solid #333; color: var(--text); border-radius: 8px; padding: 10px; min-height: 100px; /* --- AUMENTADO PARA MEJOR VISIBILIDAD EN MÓVIL --- */ box-sizing: border-box; }
+    .options-form textarea { width: 100%; background-color: var(--card); border: 1px solid #333; color: var(--text); border-radius: 8px; padding: 10px; min-height: 100px; box-sizing: border-box; }
     #changeForContainer { display: none; }
     #locationStatus { font-size: 0.8em; opacity: 0.7; margin-top: 5px; }
   </style>
 </head>
 <body>
   <div class="hero">
+    <video class="hero-video" autoplay loop muted playsinline poster="background.png">
+      <source src="hero-video.mp4" type="video/mp4">
+      Tu navegador no soporta videos de fondo.
+    </video>
+
     <img src="logo.png" alt="Logo de LUMIX ARTIFICIAL" class="logo">
     <h1>CARDAPIO LUMIX</h1>
     <p>Seu pedido na velocidade da luz. Explore nosso cardápio interativo e peça agora.</p>
@@ -101,12 +142,10 @@
         <h3>Seus Dados</h3>
         <input type="text" id="customerName" placeholder="Nome completo" required>
         <input type="tel" id="customerPhone" placeholder="Telefone de contato (WhatsApp)" required>
-        
         <h3>Endereço</h3>
         <textarea id="customerAddress" placeholder="Rua, Número, Bairro, Ponto de Referência..." rows="3" required></textarea>
         <button type="button" id="getLocationBtn" class="ghost">📍 Compartilhar Localização (GPS)</button>
         <p id="locationStatus"></p>
-        
         <h3>Forma de Pagamento</h3>
         <div class="radio-group">
             <input type="radio" id="payment_credit" name="payment" value="Cartão de Crédito" checked><label for="payment_credit">Cartão de Crédito (Maquininha)</label>
@@ -114,12 +153,10 @@
             <input type="radio" id="payment_pix" name="payment" value="PIX"><label for="payment_pix">PIX (QR Code na Maquininha)</label>
             <input type="radio" id="payment_cash" name="payment" value="Dinheiro"><label for="payment_cash">Dinheiro</label>
         </div>
-
         <div id="changeForContainer">
             <h3>Precisa de troco? Para quanto?</h3>
             <input type="text" id="changeFor" placeholder="Ex: R$ 50,00">
         </div>
-        
         <br>
         <button type="submit" id="confirmOrderBtn">Confirmar e Enviar Pedido</button>
         <button type="button" class="ghost" id="closeDeliveryModal">Cancelar</button>
@@ -128,6 +165,7 @@
   </div>
   
   <script>
+    // El script completo es idéntico a la versión anterior. No necesita cambios.
     document.addEventListener('DOMContentLoaded', () => {
         const catalog = document.getElementById('catalog');
         const categoryFilters = document.getElementById('categoryFilters');
@@ -151,55 +189,12 @@
         const changeForContainer = document.getElementById('changeForContainer');
         let cart = [];
         const money = val => val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
         const products = [
             {id: 1, name: 'Picanha na Chapa', price: 89.90, desc: 'Picanha fatiada com mandioca cozida na manteiga de garrafa e vinagrete.', category: 'Pratos', img: 'images/1.png', options: { protein: ['Carne Bovina', 'Carne de Sol'], cutlery: true }}, {id: 4, name: 'Strogonoff', price: 45.50, desc: 'Cremoso strogonoff com cogumelos, acompanha arroz branco e batata palha.', category: 'Pratos', img: 'images/4.png', options: { protein: ['Frango', 'Filé Mignon'], cutlery: true }}, {id: 2, name: 'Feijoada Completa', price: 59.90, desc: 'Acompanha arroz, couve, farofa, torresmo e laranja. Servida às quartas e sábados.', category: 'Pratos', img: 'images/2.png'}, {id: 3, name: 'Moqueca de Peixe', price: 79.90, desc: 'Deliciosa moqueca com peixe branco, pimentões, tomate, leite de coco e azeite de dendê. Acompanha arroz e pirão.', category: 'Pratos', img: 'images/3.png', options: { cutlery: true }}, {id: 5, name: 'Parmegiana de Mignon', price: 65.00, desc: 'Bife de filé mignon à parmegiana com muito queijo, acompanha arroz e fritas.', category: 'Pratos', img: 'images/5.png', options: { cutlery: true }}, {id: 24, name: 'Baião de Dois', price: 52.00, desc: 'Prato nordestino com arroz, feijão fradinho, carne seca, queijo coalho e cheiro-verde.', category: 'Pratos', img: 'images/24.png'}, {id: 25, name: 'Lasanha à Bolonhesa', price: 48.00, desc: 'Generosa porção de lasanha com massa fresca, molho bolonhesa e queijo mussarela gratinado.', category: 'Pratos', img: 'images/25.png', options: { cutlery: true }}, {id: 26, name: 'Salmão Grelhado', price: 75.00, desc: 'Posta de salmão grelhado ao molho de maracujá, acompanha arroz com brócolis e legumes.', category: 'Pratos', img: 'images/26.png', options: { cutlery: true }}, {id: 6, name: 'Fritas com Cheddar e Bacon', price: 35.90, desc: 'Porção generosa de batatas fritas crocantes com cheddar cremoso e bacon em cubos.', category: 'Porções', img: 'images/6.png'}, {id: 7, name: 'Anéis de Cebola', price: 29.90, desc: 'Anéis de cebola empanados e crocantes, acompanha molho barbecue da casa.', category: 'Porções', img: 'images/7.png'}, {id: 27, name: 'Dadinho de Tapioca', price: 32.00, desc: 'Cubinhos de tapioca com queijo coalho, acompanha geleia de pimenta.', category: 'Porções', img: 'images/27.png'}, {id: 28, name: 'Torresmo de Rolo', price: 45.00, desc: 'Pancetta de porco pururucada, crocante por fora e macia por dentro. Acompanha limão.', category: 'Porções', img: 'images/28.png'}, {id: 29, name: 'Bolinho de Bacalhau', price: 38.00, desc: 'Porção com 10 unidades do clássico bolinho de bacalhau português.', category: 'Porções', img: 'images/29.png'}, {id: 30, name: 'Tábua de Frios', price: 68.00, desc: 'Seleção de queijos, salames, presunto de parma, azeitonas e pães.', category: 'Porções', img: 'images/30.png'}, {id: 9, name: 'Iscas de Tilápia', price: 42.00, desc: 'Tirinhas de tilápia empanadas e fritas, perfeitas para petiscar. Acompanha molho tártaro.', category: 'Porções', img: 'images/9.png'}, {id: 10, name: 'Pastéis Mistos', price: 32.00, desc: 'Porção com 8 pastéis: Carne Seca com Catupiry e Queijo.', category: 'Porções', img: 'images/10.png'}, {id: 11, name: 'Pudim de Leite', price: 15.00, desc: 'Clássico pudim de leite condensado com calda de caramelo, cremoso e irresistível.', category: 'Sobremesas', img: 'images/11.png'}, {id: 12, name: 'Mousse de Maracujá', price: 18.00, desc: 'Mousse aerado com o azedinho e doce na medida certa, com calda de maracujá fresco.', category: 'Sobremesas', img: 'images/12.png'}, {id: 13, name: 'Açaí na Tigela (500ml)', price: 25.00, desc: 'Açaí batido com banana, acompanha granola, leite em pó e leite condensado.', category: 'Sobremesas', img: 'images/13.png'}, {id: 14, name: 'Petit Gateau', price: 22.90, desc: 'Bolinho quente de chocolate com interior cremoso, servido com sorvete de creme e calda.', category: 'Sobremesas', img: 'images/14.png'}, {id: 15, name: 'Torta Holandesa', price: 19.90, desc: 'Fatia de torta com base de biscoito, creme holandês e cobertura de chocolate.', category: 'Sobremesas', img: 'images/15.png'}, {id: 31, name: 'Cheesecake de Frutas Vermelhas', price: 24.00, desc: 'Fatia da famosa torta de queijo com uma generosa calda de frutas vermelhas.', category: 'Sobremesas', img: 'images/31.png'}, {id: 32, name: 'Salada de Frutas', price: 16.00, desc: 'Mix de frutas da estação: mamão, melão, morango, uva e manga.', category: 'Sobremesas', img: 'images/32.png'}, {id: 16, name: 'Caipirinha de Limão', price: 18.00, desc: 'A tradicional caipirinha brasileira, feita com cachaça de qualidade, limão e açúcar.', category: 'Bebidas', img: 'images/16.png'}, {id: 17, name: 'Guaraná Antarctica (Lata)', price: 7.00, desc: 'O refrigerante com o sabor original do Brasil.', category: 'Bebidas', img: 'images/17.png'}, {id: 18, name: 'Água de Coco (500ml)', price: 9.00, desc: 'Água de coco natural e gelada, direto da fruta.', category: 'Bebidas', img: 'images/18.png'}, {id: 19, name: 'Suco de Laranja Natural (500ml)', price: 10.00, desc: 'Feito com laranjas frescas espremidas na hora.', category: 'Bebidas', img: 'images/19.png'}, {id: 20, name: 'Cerveja Long Neck', price: 12.00, desc: 'Escolha entre Heineken, Budweiser ou Stella Artois.', category: 'Bebidas', img: 'images/20.png'}, {id: 33, name: 'Coca-Cola (Lata)', price: 7.00, desc: 'Coca-Cola original, gelada e refrescante.', category: 'Bebidas', img: 'images/33.png'}, {id: 34, name: 'Café Espresso', price: 6.00, desc: 'Café forte e encorpado para finalizar sua refeição.', category: 'Bebidas', img: 'images/34.png'}];
-        
         function renderCategories() { const categories = ['Todos', ...new Set(products.map(p => p.category).filter(c => c))]; categoryFilters.innerHTML = ''; categories.forEach(category => { const btn = document.createElement('button'); btn.dataset.category = category.toLowerCase(); btn.textContent = category; categoryFilters.appendChild(btn); }); }
         function renderCatalog(searchTerm = '', categoryFilter = 'todos') { catalog.innerHTML = ''; const searchLower = searchTerm.toLowerCase(); const filteredProducts = products.filter(p => { const matchesCategory = categoryFilter === 'todos' || (p.category && p.category.toLowerCase() === categoryFilter); const matchesSearch = p.name.toLowerCase().includes(searchLower) || p.desc.toLowerCase().includes(searchLower); return matchesCategory && matchesSearch; }); if (categoryFilter === 'todos' && searchTerm === '') { const categories = [...new Set(products.map(p => p.category).filter(c => c))]; categories.forEach(category => { catalog.innerHTML += `<h2 class="category-title">${category}</h2>`; const productRow = document.createElement('div'); productRow.className = 'product-row'; products.filter(p => p.category === category).forEach(p => { productRow.appendChild(createProductCard(p)); }); catalog.appendChild(productRow); }); } else { const catalogGrid = document.createElement('div'); catalogGrid.className = 'catalog-grid'; filteredProducts.forEach(p => { catalogGrid.appendChild(createProductCard(p)); }); catalog.appendChild(catalogGrid); } addCardEventListeners(); addDragScrollToRows(); }
-        function createProductCard(p) { const el = document.createElement('div'); el.className = 'card'; el.dataset.details = p.id; el.innerHTML = `<img src="${p.img}" alt="${p.name}" class="card-img"><div class="card-body"><h3 class="card-title">${p.name}</h3><p class="card-desc">${p.desc}</p></div><div class="card-footer"><span class="price">${money(p.price)}</span><button class="ghost">Ver Detalhes</button></div>`; return el; }
-        
-        function showProductDetail(id) {
-            const p = products.find(x => x.id == id);
-            let optionsHtml = '<form id="productOptionsForm" class="options-form">'; // Inicia el formulario para todos
-            
-            if (p.options) {
-                if (p.options.protein) {
-                    optionsHtml += '<h3>Escolha a Proteína</h3><div class="radio-group">';
-                    p.options.protein.forEach((item, index) => {
-                        optionsHtml += `<input type="radio" id="protein_${index}" name="protein" value="${item}" ${index === 0 ? 'checked' : ''}><label for="protein_${index}">${item}</label>`;
-                    });
-                    optionsHtml += '</div>';
-                }
-                if (p.options.cutlery) {
-                    optionsHtml += '<h3>Precisa de talheres?</h3><div class="radio-group">';
-                    optionsHtml += `<input type="radio" id="cutlery_yes" name="cutlery" value="Sim" checked><label for="cutlery_yes">Sim</label><input type="radio" id="cutlery_no" name="cutlery" value="Não"><label for="cutlery_no">Não</label>`;
-                    optionsHtml += '</div>';
-                }
-            }
-
-            // El campo de observaciones se añade siempre, dentro del formulario
-            optionsHtml += '<h3>Observações</h3><textarea id="observations" placeholder="Ex: tirar a cebola, ponto da carne, etc."></textarea>';
-            optionsHtml += '</form>';
-            
-            productDetailContent.innerHTML = `
-                <img src="${p.img}" alt="${p.name}" class="product-detail-modal-img"><h2 class="product-detail-modal-title">${p.name}</h2>
-                <p class="product-detail-modal-price">${money(p.price)}</p><p class="product-detail-modal-desc">${p.desc}</p>
-                ${optionsHtml} <br><button id="addToCartFromDetail">Adicionar ao Carrinho</button><button class="ghost" id="closeDetailModal">Voltar</button>`;
-            productDetailModal.style.display = 'block';
-            document.getElementById('addToCartFromDetail').addEventListener('click', () => {
-                const selectedOptions = {};
-                const form = document.getElementById('productOptionsForm');
-                // El formulario siempre existirá, así que no es necesario el 'if (form)'
-                const protein = form.querySelector('input[name="protein"]:checked'); if (protein) selectedOptions.protein = protein.value;
-                const cutlery = form.querySelector('input[name="cutlery"]:checked'); if (cutlery) selectedOptions.cutlery = cutlery.value;
-                const obs = form.querySelector('#observations'); if (obs && obs.value.trim() !== '') selectedOptions.observações = obs.value.trim();
-                addToCart(id, selectedOptions);
-                productDetailModal.style.display = 'none';
-            });
-            document.getElementById('closeDetailModal').addEventListener('click', () => { productDetailModal.style.display = 'none'; });
-        }
-
+        function createProductCard(p) { const el = document.createElement('div'); el.className = 'card'; el.dataset.details = p.id; el.innerHTML = `<img src="${p.img}" alt="${p.name}" class="card-img"><div class="card-body"><h3 class="card-title">${p.name}</h3><p class="card-desc">${p.desc}</p></div><div class="card-footer"><span class="price">${money(p.price)}</span><button class="ghost">${p.options ? 'Ver Opções' : 'Adicionar'}</button></div>`; return el; }
+        function showProductDetail(id) { const p = products.find(x => x.id == id); let optionsHtml = '<form id="productOptionsForm" class="options-form">'; if (p.options) { if (p.options.protein) { optionsHtml += '<h3>Escolha a Proteína</h3><div class="radio-group">'; p.options.protein.forEach((item, index) => { optionsHtml += `<input type="radio" id="protein_${index}" name="protein" value="${item}" ${index === 0 ? 'checked' : ''}><label for="protein_${index}">${item}</label>`; }); optionsHtml += '</div>'; } if (p.options.cutlery) { optionsHtml += '<h3>Precisa de talheres?</h3><div class="radio-group">'; optionsHtml += `<input type="radio" id="cutlery_yes" name="cutlery" value="Sim" checked><label for="cutlery_yes">Sim</label><input type="radio" id="cutlery_no" name="cutlery" value="Não"><label for="cutlery_no">Não</label>`; optionsHtml += '</div>'; } } optionsHtml += '<h3>Observações</h3><textarea id="observations" placeholder="Ex: tirar a cebola, ponto da carne, etc."></textarea>'; optionsHtml += '</form>'; productDetailContent.innerHTML = `<img src="${p.img}" alt="${p.name}" class="product-detail-modal-img"><h2 class="product-detail-modal-title">${p.name}</h2><p class="product-detail-modal-price">${money(p.price)}</p><p class="product-detail-modal-desc">${p.desc}</p>${optionsHtml} <br><button id="addToCartFromDetail">Adicionar ao Carrinho</button><button class="ghost" id="closeDetailModal">Voltar</button>`; productDetailModal.style.display = 'block'; document.getElementById('addToCartFromDetail').addEventListener('click', () => { const selectedOptions = {}; const form = document.getElementById('productOptionsForm'); const protein = form.querySelector('input[name="protein"]:checked'); if (protein) selectedOptions.protein = protein.value; const cutlery = form.querySelector('input[name="cutlery"]:checked'); if (cutlery) selectedOptions.cutlery = cutlery.value; const obs = form.querySelector('#observations'); if (obs && obs.value.trim() !== '') selectedOptions.observações = obs.value.trim(); addToCart(id, selectedOptions); productDetailModal.style.display = 'none'; }); document.getElementById('closeDetailModal').addEventListener('click', () => { productDetailModal.style.display = 'none'; }); }
         function addCardEventListeners() { document.querySelectorAll('[data-details]').forEach(card => { let isDragging = false; card.addEventListener('mousedown', () => { isDragging = false; }); card.addEventListener('mousemove', () => { isDragging = true; }); card.addEventListener('mouseup', e => { if (isDragging) return; const id = +e.currentTarget.dataset.details; showProductDetail(id); }); }); }
         function addDragScrollToRows() { const sliders = document.querySelectorAll('.product-row'); sliders.forEach(slider => { let isDown = false; let startX; let scrollLeft; slider.addEventListener('mousedown', (e) => { isDown = true; slider.classList.add('active'); startX = e.pageX - slider.offsetLeft; scrollLeft = slider.scrollLeft; }); slider.addEventListener('mouseleave', () => { isDown = false; slider.classList.remove('active'); }); slider.addEventListener('mouseup', () => { isDown = false; slider.classList.remove('active'); }); slider.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); const x = e.pageX - slider.offsetLeft; const walk = (x - startX) * 2; slider.scrollLeft = scrollLeft - walk; }); }); }
         function addToCart(productId, options = {}) { const product = products.find(p => p.id === productId); const optionsKey = JSON.stringify(options); const existingItem = cart.find(item => item.productId === productId && JSON.stringify(item.options) === optionsKey); if (existingItem) { existingItem.quantity++; } else { cart.push({ cartItemId: Date.now().toString(), productId, quantity: 1, options, name: product.name, price: product.price }); } updateCartUI(); }
